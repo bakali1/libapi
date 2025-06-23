@@ -1,119 +1,550 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Books API Test</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f7f7f7;
-      padding: 20px;
-    }
-
-    h2 {
-      color: #333;
-    }
-
-    form {
-      background: #fff;
-      padding: 15px;
-      margin-bottom: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      max-width: 500px;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-
-    input[type="submit"] {
-      background-color: #4CAF50;
-      color: white;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    input[type="submit"]:hover {
-      background-color: #45a049;
-    }
-
-    .response {
-      white-space: pre-wrap;
-      background: #e0f7fa;
-      padding: 10px;
-      border-left: 4px solid #00796b;
-      font-family: monospace;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button.danger {
+            background-color: #f44336;
+        }
+        button.danger:hover {
+            background-color: #d32f2f;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        .hidden {
+            display: none;
+        }
+        #bookFormContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        #bookFormInner {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 600px;
+            max-width: 90%;
+        }
+    </style>
 </head>
 <body>
+    <h1>Book Management System</h1>
 
-  <h2>Add or Update Book</h2>
-  <form id="form-save">
-    <input type="hidden" name="req" value="save">
-    <input type="text" name="id" placeholder="Book ID (leave empty to add)">
-    <input type="text" name="book_title" placeholder="Title" required>
-    <input type="text" name="author" placeholder="Author" required>
-    <input type="number" name="year" placeholder="Year" required>
-    <input type="number" name="number_of_books" placeholder="Number of Copies" required>
-    <select name="level_of_privilege" required>
-    <option value="">-- Select Privilege Level --</option>
-    <option value="P">P - Première (Primary School)</option>
-    <option value="C">C - Collège (Middle School)</option>
-    <option value="L">L - Lycée (High School)</option>
-    <option value="A">A - Admin</option>
-    </select>
-    <input type="submit" value="Save Book">
-  </form>
+    <!-- Login Section -->
+    <div class="section" id="loginSection">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <div class="full-width">
+                <label for="email">Email:</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="full-width">
+                <label for="password">Password:</label>
+                <input type="password" id="password" required>
+            </div>
+            <div class="full-width">
+                <button type="submit">Login</button>
+            </div>
+        </form>
+    </div>
 
-  <h2>Get Book</h2>
-  <form id="form-get">
-    <input type="hidden" name="req" value="get">
-    <input type="number" name="id" placeholder="Book ID" required>
-    <input type="submit" value="Get Book">
-  </form>
+    <!-- Main Content (hidden until logged in) -->
+    <div class="section hidden" id="mainContent">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>Book Management</h2>
+            <button id="logoutBtn" class="danger">Logout</button>
+        </div>
 
-  <h2>Delete Book</h2>
-  <form id="form-del">
-    <input type="hidden" name="req" value="del">
-    <input type="number" name="id" placeholder="Book ID" required>
-    <input type="submit" value="Delete Book">
-  </form>
+        <!-- Search Books -->
+        <div class="section">
+            <h3>Search Books</h3>
+            <form id="searchForm">
+                <div class="full-width">
+                    <label for="searchQuery">Search by Title or Author:</label>
+                    <input type="text" id="searchQuery" required>
+                </div>
+                <div class="full-width">
+                    <button type="submit">Search</button>
+                    <button type="button" id="showAllBtn">Show All Books</button>
+                </div>
+            </form>
+        </div>
 
-  <h2>Response</h2>
-  <div class="response" id="response">Waiting for request...</div>
+        <!-- Add Book Button -->
+        <div class="section">
+            <button id="addBookBtn">Add New Book</button>
+        </div>
 
-  <script>
-    const API_URL = "books-api.php"; // adjust path if needed
-    const responseBox = document.getElementById("response");
+        <!-- Books List -->
+        <div class="section">
+            <h3>Books List</h3>
+            <div id="messageArea"></div>
+            <table id="booksTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Year</th>
+                        <th>Quantity</th>
+                        <th>Privilege</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="booksList">
+                    <!-- Books will be listed here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-    const handleSubmit = (formId) => {
-      const form = document.getElementById(formId);
-      form.onsubmit = async (e) => {
-        e.preventDefault();
-        const formData = new FormData(form);
-        const data = new URLSearchParams(formData);
+    <!-- Book Form (hidden popup) -->
+    <div id="bookFormContainer" class="hidden">
+        <div id="bookFormInner">
+            <h2 id="formTitle">Add New Book</h2>
+            <form id="bookForm">
+                <input type="hidden" id="bookId">
+                <div class="full-width">
+                    <label for="bookTitle">Title:</label>
+                    <input type="text" id="bookTitle" required>
+                </div>
+                <div>
+                    <label for="author">Author:</label>
+                    <input type="text" id="author">
+                </div>
+                <div>
+                    <label for="year">Year:</label>
+                    <input type="number" id="year">
+                </div>
+                <div>
+                    <label for="quantity">Quantity:</label>
+                    <input type="number" id="quantity" value="1" min="1" required>
+                </div>
+                <div>
+                    <label for="privilege">Privilege Level:</label>
+                    <select id="privilege" required>
+                        <option value="P">P (Public)</option>
+                        <option value="R">R (Restricted)</option>
+                        <option value="S">S (Special)</option>
+                    </select>
+                </div>
+                <div class="full-width" style="display: flex; gap: 10px;">
+                    <button type="submit">Save</button>
+                    <button type="button" id="cancelFormBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-        const res = await fetch(API_URL, {
-          method: "POST",
-          body: data
+    <script>
+        // DOM Elements
+        const loginSection = document.getElementById('loginSection');
+        const mainContent = document.getElementById('mainContent');
+        const loginForm = document.getElementById('loginForm');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const searchForm = document.getElementById('searchForm');
+        const showAllBtn = document.getElementById('showAllBtn');
+        const addBookBtn = document.getElementById('addBookBtn');
+        const booksList = document.getElementById('booksList');
+        const messageArea = document.getElementById('messageArea');
+        const bookFormContainer = document.getElementById('bookFormContainer');
+        const bookForm = document.getElementById('bookForm');
+        const formTitle = document.getElementById('formTitle');
+        const cancelFormBtn = document.getElementById('cancelFormBtn');
+
+        // Check if user is logged in
+        function checkLogin() {
+            fetch('books-api.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'req=in'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    loginSection.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                    loadBooks();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        // Initial check
+        checkLogin();
+
+        // Login
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            fetch('books-api.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `req=in&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    loginSection.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                    loadBooks();
+                    showMessage('Login successful', 'success');
+                } else {
+                    showMessage('Invalid email/password', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('An error occurred', 'error');
+            });
         });
 
-        const json = await res.json();
-        responseBox.textContent = JSON.stringify(json, null, 2);
-      };
-    };
+        // Logout
+        logoutBtn.addEventListener('click', function() {
+            fetch('books-api.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'req=out'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    loginSection.classList.remove('hidden');
+                    mainContent.classList.add('hidden');
+                    document.getElementById('email').value = '';
+                    document.getElementById('password').value = '';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
 
-    handleSubmit("form-save");
-    handleSubmit("form-get");
-    handleSubmit("form-del");
-  </script>
+        // Load all books
+        function loadBooks() {
+            fetch('books-api.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'req=getAll'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    displayBooks(data.more);
+                } else {
+                    showMessage('Failed to load books', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('An error occurred', 'error');
+            });
+        }
 
+        // Search books
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const query = document.getElementById('searchQuery').value;
+
+            fetch('books-api.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `req=search&query=${encodeURIComponent(query)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    displayBooks(data.more);
+                    showMessage(`Found ${data.more.length} books`, 'success');
+                } else {
+                    showMessage('No books found', 'error');
+                    booksList.innerHTML = '';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('An error occurred', 'error');
+            });
+        });
+
+        // Show all books
+        showAllBtn.addEventListener('click', function() {
+            document.getElementById('searchQuery').value = '';
+            loadBooks();
+        });
+
+        // Display books in table
+        function displayBooks(books) {
+            booksList.innerHTML = '';
+            
+            if (books.length === 0) {
+                booksList.innerHTML = '<tr><td colspan="7" style="text-align: center;">No books found</td></tr>';
+                return;
+            }
+
+            books.forEach(book => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${book.book_id}</td>
+                    <td>${book.book_title}</td>
+                    <td>${book.author || '-'}</td>
+                    <td>${book.year || '-'}</td>
+                    <td>${book.number_of_books}</td>
+                    <td>${book.level_of_privilege}</td>
+                    <td>
+                        <button class="editBtn" data-id="${book.book_id}">Edit</button>
+                        <button class="deleteBtn danger" data-id="${book.book_id}">Delete</button>
+                    </td>
+                `;
+                booksList.appendChild(row);
+            });
+
+            // Add event listeners to edit buttons
+            document.querySelectorAll('.editBtn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const bookId = this.getAttribute('data-id');
+                    editBook(bookId);
+                });
+            });
+
+            // Add event listeners to delete buttons
+            document.querySelectorAll('.deleteBtn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const bookId = this.getAttribute('data-id');
+                    deleteBook(bookId);
+                });
+            });
+        }
+
+        // Show add book form
+        addBookBtn.addEventListener('click', function() {
+            document.getElementById('bookId').value = '';
+            document.getElementById('bookTitle').value = '';
+            document.getElementById('author').value = '';
+            document.getElementById('year').value = '';
+            document.getElementById('quantity').value = '1';
+            document.getElementById('privilege').value = 'P';
+            formTitle.textContent = 'Add New Book';
+            bookFormContainer.classList.remove('hidden');
+        });
+
+        // Cancel form
+        cancelFormBtn.addEventListener('click', function() {
+            bookFormContainer.classList.add('hidden');
+        });
+
+        // Edit book
+        function editBook(bookId) {
+            fetch('books-api.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `req=get&id=${bookId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    const book = data.more;
+                    document.getElementById('bookId').value = book.book_id;
+                    document.getElementById('bookTitle').value = book.book_title;
+                    document.getElementById('author').value = book.author || '';
+                    document.getElementById('year').value = book.year || '';
+                    document.getElementById('quantity').value = book.number_of_books;
+                    document.getElementById('privilege').value = book.level_of_privilege;
+                    formTitle.textContent = 'Edit Book';
+                    bookFormContainer.classList.remove('hidden');
+                } else {
+                    showMessage('Failed to load book details', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('An error occurred', 'error');
+            });
+        }
+
+        // Save book (add/edit)
+        bookForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const bookId = document.getElementById('bookId').value;
+            const title = document.getElementById('bookTitle').value;
+            const author = document.getElementById('author').value;
+            const year = document.getElementById('year').value;
+            const quantity = document.getElementById('quantity').value;
+            const privilege = document.getElementById('privilege').value;
+
+            const formData = new URLSearchParams();
+            formData.append('req', 'save');
+            formData.append('title', title);
+            formData.append('author', author);
+            formData.append('year', year);
+            formData.append('quantity', quantity);
+            formData.append('privilege', privilege);
+            if (bookId) formData.append('id', bookId);
+
+            fetch('books-api.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    bookFormContainer.classList.add('hidden');
+                    loadBooks();
+                    showMessage('Book saved successfully', 'success');
+                } else {
+                    showMessage('Failed to save book: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('An error occurred', 'error');
+            });
+        });
+
+        // Delete book
+        function deleteBook(bookId) {
+            if (!confirm('Are you sure you want to delete this book?')) return;
+
+            fetch('books-api.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `req=del&id=${bookId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    loadBooks();
+                    showMessage('Book deleted successfully', 'success');
+                } else {
+                    showMessage('Failed to delete book', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('An error occurred', 'error');
+            });
+        }
+
+        // Show message
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = message;
+            messageArea.innerHTML = '';
+            messageArea.appendChild(messageDiv);
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+    </script>
 </body>
 </html>
