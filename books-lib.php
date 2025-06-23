@@ -35,27 +35,20 @@ class BookLib{
 
     // (D) CREATE/UPDATE BOOK
     function save ($book_title, $author, $year, $number_of_books, $level_of_privilege, $id=null) {
-    $validLevels = ['P', 'C', 'L', 'A'];
-    if (!in_array($level_of_privilege, $validLevels)) {
-        $this->error = "Invalid privilege level";
-        return false;
-    }
-
-    $data = [$book_title, $author, $year, $number_of_books, $level_of_privilege];
-    
-    if ($id === null) {
-        if (!$this->query("INSERT INTO `books` (`book_title`, `author`, `year`, `number_of_books`, `level_of_privilege`) VALUES (?,?,?,?,?)", $data)) {
+        $validLevels = ['P', 'C', 'L', 'A'];
+        if (!in_array($level_of_privilege, $validLevels)) {
+            $this->error = "Invalid privilege level";
             return false;
         }
-    } else {
-        $data[] = $id;
-        if (!$this->query("UPDATE `books` SET `book_title`=?, `author`=?, `year`=?, `number_of_books`=?, `level_of_privilege`=? WHERE `book_id`=?", $data)) {
-            return false;
+        $data = [$book_title, $author, $year, $number_of_books, $level_of_privilege];
+        if ($id===null) {
+            $this->query("INSERT INTO `books` (`book_title`, `author`, `year`,`number_of_books`,`level_of_privilege`) VALUES (?,?,?,?,?)", $data);
+        } else {
+            $data[] = $id;
+            $this->query("UPDATE `books` SET `book_title`=?, `author`=?, `year`=?, `number_of_books`=?, `level_of_privilege`=? WHERE `book_id`=?", $data);
         }
+        return true;
     }
-    return true;
-}
-
 
     // (E) DELETE BOOK
     function del ($id) {
