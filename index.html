@@ -62,7 +62,13 @@
     <input type="text" name="author" placeholder="Author" required>
     <input type="number" name="year" placeholder="Year" required>
     <input type="number" name="number_of_books" placeholder="Number of Copies" required>
-    <input type="number" name="level_of_privilege" placeholder="Privilege Level" required>
+    <select name="level_of_privilege" required>
+    <option value="">-- Select Privilege Level --</option>
+    <option value="P">P - Première (Primary School)</option>
+    <option value="C">C - Collège (Middle School)</option>
+    <option value="L">L - Lycée (High School)</option>
+    <option value="A">A - Admin</option>
+    </select>
     <input type="submit" value="Save Book">
   </form>
 
