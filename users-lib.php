@@ -52,20 +52,20 @@ class Userlib{
 
     // (G) VERIFY USER (FOR LOGIN)
     function verify ($email, $pass) {
-        // (G1) GET USER
-        $user = $this->get($email);
-        if (!is_array($user)) { return false; }
+    // (G1) GET USER
+    $user = $this->get($email);
+    if (!is_array($user)) { return false; }
 
-        // (G2) PASSWORD CHECK
-        if (password_verify($pass, $user["user_password"])) {
+    // (G2) PASSWORD CHECK
+    if (password_verify($pass, $user["user_password"])) {
         $_SESSION["user"] = [
             "id" => $user["user_id"],
-            "email" => $user["user_email"]
+            "email" => $user["user_email"],
+            "privilege" => $user["user_privilege"] // Make sure this field exists in your users table
         ];
         return true;
-        } else { return false; }
-    }
-    }
+    } else { return false; }
+}}
 
     // (H) DATABASE SETTINGS - CHANGE TO YOUR OWN!
     define("DB_HOST", "mysql-libapi.alwaysdata.net");

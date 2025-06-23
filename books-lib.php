@@ -27,6 +27,13 @@ class BookLib {
 
     // (D) CREATE/UPDATE BOOK
     function save ($title, $author, $year, $quantity, $privilege, $id=null) {
+        // Validate privilege level
+        $validPrivileges = ['P', 'C', 'L', 'A'];
+        if (!in_array($privilege, $validPrivileges)) {
+            $this->error = "Invalid privilege level";
+            return false;
+        }
+        
         $data = [$title, $author, $year, $quantity, $privilege];
         if ($id===null) {
             $this->query("INSERT INTO `books` (`book_title`, `author`, `year`, `number_of_books`, `level_of_privilege`) VALUES (?,?,?,?,?)", $data);

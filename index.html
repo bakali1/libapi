@@ -209,9 +209,10 @@
                 <div>
                     <label for="privilege">Privilege Level:</label>
                     <select id="privilege" required>
-                        <option value="P">P (Public)</option>
-                        <option value="R">R (Restricted)</option>
-                        <option value="S">S (Special)</option>
+                        <option value="P">P (Primary School)</option>
+                        <option value="C">C (Middle School)</option>
+                        <option value="L">L (High School)</option>
+                        <option value="A">A (Admin)</option>
                     </select>
                 </div>
                 <div class="full-width" style="display: flex; gap: 10px;">
@@ -374,30 +375,37 @@
         });
 
         // Display books in table
-        function displayBooks(books) {
-            booksList.innerHTML = '';
-            
-            if (books.length === 0) {
-                booksList.innerHTML = '<tr><td colspan="7" style="text-align: center;">No books found</td></tr>';
-                return;
-            }
+    function displayBooks(books) {
+        booksList.innerHTML = '';
+        
+        if (books.length === 0) {
+            booksList.innerHTML = '<tr><td colspan="7" style="text-align: center;">No books found</td></tr>';
+            return;
+        }
 
-            books.forEach(book => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${book.book_id}</td>
-                    <td>${book.book_title}</td>
-                    <td>${book.author || '-'}</td>
-                    <td>${book.year || '-'}</td>
-                    <td>${book.number_of_books}</td>
-                    <td>${book.level_of_privilege}</td>
-                    <td>
-                        <button class="editBtn" data-id="${book.book_id}">Edit</button>
-                        <button class="deleteBtn danger" data-id="${book.book_id}">Delete</button>
-                    </td>
-                `;
-                booksList.appendChild(row);
-            });
+        const privilegeNames = {
+            'P': 'Primary',
+            'C': 'Middle School',
+            'L': 'High School',
+            'A': 'Admin'
+        };
+
+        books.forEach(book => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${book.book_id}</td>
+                <td>${book.book_title}</td>
+                <td>${book.author || '-'}</td>
+                <td>${book.year || '-'}</td>
+                <td>${book.number_of_books}</td>
+                <td>${privilegeNames[book.level_of_privilege] || book.level_of_privilege}</td>
+                <td>
+                    <button class="editBtn" data-id="${book.book_id}">Edit</button>
+                    <button class="deleteBtn danger" data-id="${book.book_id}">Delete</button>
+                </td>
+            `;
+            booksList.appendChild(row);
+        });
 
             // Add event listeners to edit buttons
             document.querySelectorAll('.editBtn').forEach(btn => {
