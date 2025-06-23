@@ -5,12 +5,11 @@ require "users-lib.php";
 // (B) STANDARD JSON RESPONSE
 function respond ($status, $message, $more=null, $http=null) {
   if ($http !== null) { http_response_code($http); }
-  header("Content-Type: application/json");
-  exit(json_encode(array(
+  exit(json_encode([
     "status" => $status,
     "message" => $message,
     "more" => $more
-  )));
+    ]));
 }
 
 // (C) LOGIN CHECK
