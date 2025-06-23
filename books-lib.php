@@ -21,27 +21,41 @@ class BookLib{
     }
 
     // (C) SUPPORT FUNCTION - SQL QUERY
-    function query ($sql, $data) : void {
-        $this->stmt = $this->pdo->prepare($sql);
-        $this->stmt->execute($data);
+    function query ($sql, $data) {
+        try {
+            $this->stmt = $this->pdo->prepare($sql);
+            $this->stmt->execute($data);
+            return true;
+        } catch (PDOException $ex) {
+            $this->error = $ex->getMessage();
+            return false;
+        }
     }
+
 
     // (D) CREATE/UPDATE BOOK
     function save ($book_title, $author, $year, $number_of_books, $level_of_privilege, $id=null) {
-        $validLevels = ['P', 'C', 'L', 'A'];
-        if (!in_array($level_of_privilege, $validLevels)) {
-            $this->error = "Invalid privilege level";
+    $validLevels = ['P', 'C', 'L', 'A'];
+    if (!in_array($level_of_privilege, $validLevels)) {
+        $this->error = "Invalid privilege level";
+        return false;
+    }
+
+    $data = [$book_title, $author, $year, $number_of_books, $level_of_privilege];
+    
+    if ($id === null) {
+        if (!$this->query("INSERT INTO `books` (`book_title`, `author`, `year`, `number_of_books`, `level_of_privilege`) VALUES (?,?,?,?,?)", $data)) {
             return false;
         }
-        $data = [$book_title, $author, $year, $number_of_books, $level_of_privilege];
-        if ($id===null) {
-            $this->query("INSERT INTO `books` (`book_title`, `author`, `year`,`number_of_books`,`level_of_privilege`) VALUES (?,?,?,?,?)", $data);
-        } else {
-            $data[] = $id;
-            $this->query("UPDATE `books` SET `book_title`=?, `author`=?, `year`=?, `number_of_books`=?, `level_of_privilege`=? WHERE `book_id`=?", $data);
+    } else {
+        $data[] = $id;
+        if (!$this->query("UPDATE `books` SET `book_title`=?, `author`=?, `year`=?, `number_of_books`=?, `level_of_privilege`=? WHERE `book_id`=?", $data)) {
+            return false;
         }
-        return true;
     }
+    return true;
+}
+
 
     // (E) DELETE BOOK
     function del ($id) {
