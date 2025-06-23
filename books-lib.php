@@ -34,21 +34,46 @@ class BookLib{
 
 
     // (D) CREATE/UPDATE BOOK
-    function save ($book_title, $author, $year, $number_of_books, $level_of_privilege, $id=null) {
-        $validLevels = ['P', 'C', 'L', 'A'];
-        if (!in_array($level_of_privilege, $validLevels)) {
-            $this->error = "Invalid privilege level";
+function save($book_title, $author, $year, $number_of_books, $level_of_privilege, $id = null) {
+    // Valid privilege levels
+    $validLevels = ['P', 'C', 'L', 'A'];
+    if (!in_array($level_of_privilege, $validLevels)) {
+        $this->error = "Invalid privilege level";
+        return false;
+    }
+
+    // Data to insert/update
+    $data = [$book_title, $author, $year, $number_of_books, $level_of_privilege];
+    if($id === '' || $id === null) {
+        // If ID is an empty string or null, treat it as an insert operation
+        $id = null; // Convert empty string to null for insert operation
+    }
+    // If no ID is provided, it's an INSERT operation
+    if ($id === null) {
+        $success = $this->query(
+            "INSERT INTO `books` (`book_title`, `author`, `year`, `number_of_books`, `level_of_privilege`) VALUES (?,?,?,?,?)",
+            $data
+        );
+        if (!$success) {
+            $this->error = "Failed to insert the book.";
             return false;
         }
-        $data = [$book_title, $author, $year, $number_of_books, $level_of_privilege];
-        if ($id===null) {
-            $this->query("INSERT INTO `books` (`book_title`, `author`, `year`,`number_of_books`,`level_of_privilege`) VALUES (?,?,?,?,?)", $data);
-        } else {
-            $data[] = $id;
-            $this->query("UPDATE `books` SET `book_title`=?, `author`=?, `year`=?, `number_of_books`=?, `level_of_privilege`=? WHERE `book_id`=?", $data);
+    } else {
+        // If an ID is provided, it's an UPDATE operation
+        $data[] = $id;
+        $success = $this->query(
+            "UPDATE `books` SET `book_title`=?, `author`=?, `year`=?, `number_of_books`=?, `level_of_privilege`=? WHERE `book_id`=?",
+            $data
+        );
+        if (!$success) {
+            $this->error = "Failed to update the book.";
+            return false;
         }
-        return true;
     }
+
+    return true;
+}
+
 
     // (E) DELETE BOOK
     function del ($id) {
