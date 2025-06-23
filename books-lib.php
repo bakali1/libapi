@@ -1,17 +1,16 @@
 <?php
-
-class BookLib{
-        // (A) CONSTRUCTOR - CONNECT TO DATABASE
+class BookLib {
+    // (A) CONSTRUCTOR - CONNECT TO DATABASE
     private $pdo = null;
     private $stmt = null;
     public $error = "";
     function __construct () {
         $this->pdo = new PDO(
-        "mysql:host=".DB_HOST.";dbname=".DB_NAME.";charset=".DB_CHARSET,
-        DB_USER, DB_PASSWORD, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-        ]);
+            "mysql:host=".DB_HOST.";dbname=".DB_NAME.";charset=".DB_CHARSET,
+            DB_USER, DB_PASSWORD, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+            ]);
     }
 
     // (B) DESTRUCTOR - CLOSE DATABASE CONNECTION
@@ -21,59 +20,22 @@ class BookLib{
     }
 
     // (C) SUPPORT FUNCTION - SQL QUERY
-    function query ($sql, $data) {
-        try {
-            $this->stmt = $this->pdo->prepare($sql);
-            $this->stmt->execute($data);
-            return true;
-        } catch (PDOException $ex) {
-            $this->error = $ex->getMessage();
-            return false;
-        }
+    function query ($sql, $data=null) : void {
+        $this->stmt = $this->pdo->prepare($sql);
+        $this->stmt->execute($data);
     }
-
 
     // (D) CREATE/UPDATE BOOK
-function save($book_title, $author, $year, $number_of_books, $level_of_privilege, $id = null) {
-    // Valid privilege levels
-    $validLevels = ['P', 'C', 'L', 'A'];
-    if (!in_array($level_of_privilege, $validLevels)) {
-        $this->error = "Invalid privilege level";
-        return false;
-    }
-
-    // Data to insert/update
-    $data = [$book_title, $author, $year, $number_of_books, $level_of_privilege];
-    if($id === '' || $id === null) {
-        // If ID is an empty string or null, treat it as an insert operation
-        $id = null; // Convert empty string to null for insert operation
-    }
-    // If no ID is provided, it's an INSERT operation
-    if ($id === null) {
-        $success = $this->query(
-            "INSERT INTO `books` (`book_title`, `author`, `year`, `number_of_books`, `level_of_privilege`) VALUES (?,?,?,?,?)",
-            $data
-        );
-        if (!$success) {
-            $this->error = "Failed to insert the book.";
-            return false;
+    function save ($title, $author, $year, $quantity, $privilege, $id=null) {
+        $data = [$title, $author, $year, $quantity, $privilege];
+        if ($id===null) {
+            $this->query("INSERT INTO `books` (`book_title`, `author`, `year`, `number_of_books`, `level_of_privilege`) VALUES (?,?,?,?,?)", $data);
+        } else {
+            $data[] = $id;
+            $this->query("UPDATE `books` SET `book_title`=?, `author`=?, `year`=?, `number_of_books`=?, `level_of_privilege`=? WHERE `book_id`=?", $data);
         }
-    } else {
-        // If an ID is provided, it's an UPDATE operation
-        $data[] = $id;
-        $success = $this->query(
-            "UPDATE `books` SET `book_title`=?, `author`=?, `year`=?, `number_of_books`=?, `level_of_privilege`=? WHERE `book_id`=?",
-            $data
-        );
-        if (!$success) {
-            $this->error = "Failed to update the book.";
-            return false;
-        }
+        return true;
     }
-
-    return true;
-}
-
 
     // (E) DELETE BOOK
     function del ($id) {
@@ -87,23 +49,27 @@ function save($book_title, $author, $year, $number_of_books, $level_of_privilege
         return $this->stmt->fetch();
     }
 
-    function all () {
-        $this->query("SELECT * FROM `books`", []);
+    // (G) GET ALL BOOKS
+    function getAll () {
+        $this->query("SELECT * FROM `books`");
         return $this->stmt->fetchAll();
     }
 
-
-    // (I) START!
-
+    // (H) SEARCH BOOKS
+    function search ($query) {
+        $search = "%$query%";
+        $this->query("SELECT * FROM `books` WHERE `book_title` LIKE ? OR `author` LIKE ?", [$search, $search]);
+        return $this->stmt->fetchAll();
+    }
 }
-    define("DB_HOST", "mysql-libapi.alwaysdata.net");
-    define("DB_NAME", "libapi_database");
-    define("DB_CHARSET", "utf8mb4");
-    define("DB_USER", "libapi");
-    define("DB_PASSWORD", "Bakali1");
 
-// (I) START!
+// (I) DATABASE SETTINGS - CHANGE TO YOUR OWN!
+define("DB_HOST", "mysql-libapi.alwaysdata.net");
+define("DB_NAME", "libapi_database");
+define("DB_CHARSET", "utf8mb4");
+define("DB_USER", "libapi");
+define("DB_PASSWORD", "Bakali1");
+
+// (J) START!
 session_start();
-$Book = new BookLib();
-
-?>
+$LIB = new BookLib();

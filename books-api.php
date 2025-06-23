@@ -1,61 +1,79 @@
 <?php
-// (A) LOAD USER LIBRARY
+// (A) LOAD BOOK LIBRARY
 require "books-lib.php";
 
 // (B) STANDARD JSON RESPONSE
 function respond ($status, $message, $more=null, $http=null) {
-  if ($http !== null) { http_response_code($http); }
-  header("Content-Type: application/json");
-  exit(json_encode([
-    "status" => $status,
-    "message" => $message,
-    "more" => $more
-  ]));
+    if ($http !== null) { http_response_code($http); }
+    header("Content-Type: application/json");
+    exit(json_encode([
+        "status" => $status,
+        "message" => $message,
+        "more" => $more
+    ]));
 }
 
-
-// (C) LOGIN CHECK
+// (C) LOGIN CHECK (KEPT FROM ORIGINAL FOR AUTHENTICATION)
 function lcheck () {
-  if (!isset($_SESSION["user"])) {
-    respond(0, "Please sign in first", null, 403);
-  }
+    if (!isset($_SESSION["user"])) {
+        respond(0, "Please sign in first", null, 403);
+    }
 }
 
 // (D) HANDLE REQUEST
 if (isset($_POST["req"])) { switch ($_POST["req"]) {
-  // (D1) BAD REQUEST
-  default:
-    respond(false, "Invalid request", null, null, 400);
-    break;
+    // (D1) BAD REQUEST
+    default:
+        respond(false, "Invalid request", null, 400);
+        break;
 
-  // (D2) SAVE BOOK
-  case "save": lcheck();
-    $pass = $Book->save(
-      $_POST["book_title"] ?? '',
-      $_POST["author"] ?? '',
-      $_POST["year"] ?? '',
-      $_POST["number_of_books"] ?? 0,
-      $_POST["level_of_privilege"] ?? 0,
-      $_POST["id"] ?? null
-    );
+    // (D2) SAVE BOOK
+    case "save": lcheck();
+        $pass = $LIB->save(
+            $_POST["title"],
+            $_POST["author"],
+            $_POST["year"],
+            $_POST["quantity"],
+            $_POST["privilege"],
+            isset($_POST["id"]) ? $_POST["id"] : null
+        );
+        respond($pass, $pass?"OK":$LIB->error);
+        break;
 
+    // (D3) DELETE BOOK
+    case "del": lcheck();
+        $pass = $LIB->del($_POST["id"]);
+        respond($pass, $pass?"OK":$LIB->error);
+        break;
 
-    respond($pass, $pass?"OK":$Book->error);
-    break;
+    // (D4) GET BOOK
+    case "get": lcheck();
+        respond(true, "OK", $LIB->get($_POST["id"]));
+        break;
 
-  // (D3) DELETE BOOK
-  case "del": lcheck();
-    $pass = $Book->del($_POST["id"]);
-    respond($pass, $pass?"OK":$Book->error);
-    break;
+    // (D5) GET ALL BOOKS
+    case "getAll": lcheck();
+        respond(true, "OK", $LIB->getAll());
+        break;
 
-  // (D4) GET BOOK
-  case "get": lcheck();
-    respond(true, "OK", $Book->get($_POST["id"]));
-    break;
-  // (D5) GET ALL BOOKS
-  case "all": lcheck();
-    respond(true, "OK", $Book->all());
-    break;
+    // (D6) SEARCH BOOKS
+    case "search": lcheck();
+        respond(true, "OK", $LIB->search($_POST["query"]));
+        break;
 
+    // (D7) LOGIN (KEPT FROM ORIGINAL)
+    case "in":
+        // ALREADY SIGNED IN
+        if (isset($_SESSION["user"])) { respond(true, "OK"); }
+
+        // CREDENTIALS CHECK
+        $pass = $USR->verify($_POST["email"], $_POST["password"]);
+        respond($pass, $pass?"OK":"Invalid email/password");
+        break;
+
+    // (D8) LOGOUT (KEPT FROM ORIGINAL)
+    case "out":
+        unset($_SESSION["user"]);
+        respond(true, "OK");
+        break;
 }}
