@@ -103,14 +103,42 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
+
+        #bookFormContainer.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
         #bookFormInner {
             background-color: white;
             padding: 20px;
             border-radius: 8px;
             width: 600px;
             max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
         }
+
+        #closeFormBtn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #666;
+        }
+
+        #closeFormBtn:hover {
+            color: #333;
+        }
+
     </style>
 </head>
 <body>
@@ -185,42 +213,46 @@
     </div>
 
     <!-- Book Form (hidden popup) -->
-    <div id="bookFormContainer" class="hidden">
-        <div id="bookFormInner">
+    <div id="bookFormContainer" class="modal-hidden">
+    <div id="bookFormInner">
+        <div class="modal-header">
             <h2 id="formTitle">Add New Book</h2>
-            <form id="bookForm">
-                <input type="hidden" id="bookId">
-                <div class="full-width">
-                    <label for="bookTitle">Title:</label>
-                    <input type="text" id="bookTitle" required>
-                </div>
-                <div>
-                    <label for="author">Author:</label>
-                    <input type="text" id="author">
-                </div>
-                <div>
-                    <label for="year">Year:</label>
-                    <input type="number" id="year">
-                </div>
-                <div>
-                    <label for="quantity">Quantity:</label>
-                    <input type="number" id="quantity" value="1" min="1" required>
-                </div>
-                <div>
-                    <label for="privilege">Privilege Level:</label>
-                    <select id="privilege" required>
-                        <option value="P">P (Primary School)</option>
-                        <option value="C">C (Middle School)</option>
-                        <option value="L">L (High School)</option>
-                        <option value="A">A (Admin)</option>
-                    </select>
-                </div>
-                <div class="full-width" style="display: flex; gap: 10px;">
-                    <button type="submit">Save</button>
-                    <button type="button" id="cancelFormBtn">Cancel</button>
-                </div>
-            </form>
+            <button id="closeFormBtn" class="modal-close-btn" aria-label="Close form">&times;</button>
         </div>
+        <form id="bookForm">
+            <input type="hidden" id="bookId">
+            <div class="full-width">
+                <label for="bookTitle">Title:</label>
+                <input type="text" id="bookTitle" required>
+            </div>
+            <div>
+                <label for="author">Author:</label>
+                <input type="text" id="author">
+            </div>
+            <div>
+                <label for="year">Year:</label>
+                <input type="number" id="year">
+            </div>
+            <div>
+                <label for="quantity">Quantity:</label>
+                <input type="number" id="quantity" value="1" min="1" required>
+            </div>
+            <div>
+                <label for="privilege">Privilege Level:</label>
+                <select id="privilege" required>
+                    <option value="P">P (Primary School)</option>
+                    <option value="C">C (Middle School)</option>
+                    <option value="L">L (High School)</option>
+                    <option value="A">A (Admin)</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Save</button>
+                <button type="button" id="cancelFormBtn" class="btn-secondary">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
     </div>
 
     <script>
@@ -433,12 +465,26 @@
             document.getElementById('quantity').value = '1';
             document.getElementById('privilege').value = 'P';
             formTitle.textContent = 'Add New Book';
-            bookFormContainer.classList.remove('hidden');
+            bookFormContainer.classList.add('visible');
         });
 
-        // Cancel form
-        cancelFormBtn.addEventListener('click', function() {
-            bookFormContainer.classList.add('hidden');
+        // Close form with X button
+        document.getElementById('closeFormBtn').addEventListener('click', function() {
+            bookFormContainer.classList.remove('visible');
+        });
+
+        // Close form when clicking outside
+        bookFormContainer.addEventListener('click', function(e) {
+            if (e.target === this) {
+                bookFormContainer.classList.remove('visible');
+            }
+        });
+
+        // Close form with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && bookFormContainer.classList.contains('visible')) {
+                bookFormContainer.classList.remove('visible');
+            }
         });
 
         // Edit book
