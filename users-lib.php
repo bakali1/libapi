@@ -1,5 +1,46 @@
 <?php
+header('Content-Type: application/json');
+ob_start(); // Start output buffering
 
+// Your existing Userlib class...
+
+// (H) DATABASE SETTINGS
+define("DB_HOST", "mysql-libapi.alwaysdata.net");
+define("DB_NAME", "libapi_database");
+define("DB_CHARSET", "utf8mb4");
+define("DB_USER", "libapi");
+define("DB_PASSWORD", "Bakali1");
+
+// (I) START!
+session_start();
+$USR = new Userlib();
+
+// Handle login request
+if (isset($_POST['req']) && $_POST['req'] === 'in') {
+    try {
+        $email = $_POST['email'] ?? '';
+        $password = $_POST['password'] ?? '';
+        
+        $result = $USR->verify($email, $password);
+        
+        ob_end_clean(); // Clean any output
+        echo json_encode([
+            'status' => $result,
+            'message' => $result ? "OK" : "Invalid email/password"
+        ]);
+        exit();
+        
+    } catch (Exception $e) {
+        ob_end_clean();
+        http_response_code(500);
+        echo json_encode([
+            'status' => false,
+            'message' => 'Server error',
+            'error' => $e->getMessage() // Only for debugging
+        ]);
+        exit();
+    }
+}
 class Userlib{
         // (A) CONSTRUCTOR - CONNECT TO DATABASE
     private $pdo = null;
@@ -67,15 +108,5 @@ class Userlib{
     } else { return false; }
 }}
 
-    // (H) DATABASE SETTINGS - CHANGE TO YOUR OWN!
-    define("DB_HOST", "mysql-libapi.alwaysdata.net");
-    define("DB_NAME", "libapi_database");
-    define("DB_CHARSET", "utf8mb4");
-    define("DB_USER", "libapi");
-    define("DB_PASSWORD", "Bakali1");
-
-    // (I) START!
-    session_start();
-    $USR = new Userlib();
 
 ?>

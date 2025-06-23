@@ -297,35 +297,43 @@
         checkLogin();
 
         // Login
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+        loginForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
 
-            fetch('books-api.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `req=in&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status) {
-                    loginSection.classList.add('hidden');
-                    mainContent.classList.remove('hidden');
-                    loadBooks();
-                    showMessage('Login successful', 'success');
-                } else {
-                    showMessage('Invalid email/password', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showMessage('An error occurred', 'error');
-            });
+    try {
+        const response = await fetch('users-lib.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `req=in&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
         });
 
+        // First check if response is OK
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Then try to parse JSON
+        const data = await response.json();
+        
+        if (data.status) {
+            // Login success
+            loginSection.classList.add('hidden');
+            mainContent.classList.remove('hidden');
+            loadBooks();
+            showMessage('Login successful', 'success');
+        } else {
+            // Login failed
+            showMessage(data.message || 'Invalid email/password', 'error');
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        showMessage('Login failed. Please try again.', 'error');
+    }
+});
         // Logout
         logoutBtn.addEventListener('click', function() {
             fetch('books-api.php', {

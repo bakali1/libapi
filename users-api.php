@@ -1,7 +1,4 @@
 <?php
-// (A) LOAD USER LIBRARY
-require "users-lib.php";
-
 // (B) STANDARD JSON RESPONSE
 function respond ($status, $message, $more=null, $http=null) {
   if ($http !== null) { http_response_code($http); }
