@@ -51,21 +51,55 @@ class BookLib {
     }
 
     // (F) GET BOOK
-    function get ($id) {
-        $this->query("SELECT * FROM `books` WHERE `book_id`=?", [$id]);
-        return $this->stmt->fetch();
+function get($id) {
+    // Fetch the book by its ID
+    $this->query("SELECT * FROM `books` WHERE `book_id` = ?", [$id]);
+    $data = $this->stmt->fetch();
+    if (!$data) {
+        $this->error = "Book not found";
+        return false;
+    }
+    // if null give them an P level of privilege
+    $userPrivilege = $_SESSION['user']['privilege'] ?? 'P';
+
+    // Allow if user is admin
+    if ($userPrivilege === 'A') {
+        return $data;
     }
 
+    // Allow only if user's level matches the book's level
+    if ($data['level_of_privilege'] === $userPrivilege) {
+        return $data;
+    }
+    // Otherwise, deny access
+    $this->error = "Insufficient privileges to view this book";
+    return false;
+}
+
+
     // (G) GET ALL BOOKS
-    function getAll () {
-        $this->query("SELECT * FROM `books`");
+    function getAll() {
+        $privilege = $_SESSION['user']['privilege'] ?? 'P';
+
+        if ($privilege === 'A') {
+            $this->query("SELECT * FROM `books`");
+        } else {
+            $this->query("SELECT * FROM `books` WHERE `level_of_privilege` = ?", [$privilege]);
+        }
+
         return $this->stmt->fetchAll();
     }
+
 
     // (H) SEARCH BOOKS
     function search ($query) {
         $search = "%$query%";
-        $this->query("SELECT * FROM `books` WHERE `book_title` LIKE ? OR `author` LIKE ?", [$search, $search]);
+        $privilege = $_SESSION['user']['privilege'] ?? 'P';
+        if($privilege === 'A') {
+            $this->query("SELECT * FROM `books` WHERE `book_title` LIKE ? OR `author` LIKE ?", [$search, $search]);
+            return $this->stmt->fetchAll();
+        }
+        $this->query("SELECT * FROM `books` WHERE (`book_title` LIKE ? OR `author` LIKE ?) AND `level_of_privilege` = ?", [$search, $search, $privilege]);
         return $this->stmt->fetchAll();
     }
 }

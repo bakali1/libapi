@@ -273,7 +273,7 @@
 
         // Check if user is logged in
         function checkLogin() {
-            fetch('books-api.php', {
+            fetch('users-api.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -336,7 +336,7 @@
 });
         // Logout
         logoutBtn.addEventListener('click', function() {
-            fetch('books-api.php', {
+            fetch('users-api.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',

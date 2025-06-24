@@ -66,19 +66,4 @@ if (isset($_POST["req"])) {
         respond(true, "OK", $LIB->search($_POST["query"]));
         break;
 
-    // (D7) LOGIN (KEPT FROM ORIGINAL)
-    case "in":
-        // ALREADY SIGNED IN
-        if (isset($_SESSION["user"])) { respond(true, "OK"); }
-
-        // CREDENTIALS CHECK
-        $pass = $USR->verify($_POST["email"], $_POST["password"]);
-        respond($pass, $pass?"OK":"Invalid email/password");
-        break;
-
-    // (D8) LOGOUT (KEPT FROM ORIGINAL)
-    case "out":
-        unset($_SESSION["user"]);
-        respond(true, "OK");
-        break;
 }}
